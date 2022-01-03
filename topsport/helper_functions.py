@@ -1,7 +1,8 @@
-def get_basketball_odds(soup):
+def get_odds(soup, sport='Krepšinis'):
     """
     This function reads basketball data
-    :param soup:
+    :param soup: bs4 element
+    :param sport: str
     :return: list
     """
     # find All leagues
@@ -13,6 +14,20 @@ def get_basketball_odds(soup):
 
     # create empty list to store data
     data = list()
+
+    # def helper function
+    def get_text(element, tag, attr):
+        """
+        This function text data if element is found.
+        :param element: bs4 element
+        :param tag: str
+        :param attr: str
+        :return: str
+        """
+        _ = element.findAll(tag, attr)
+        if _:
+            return _[0].text
+        return ''
 
     # iterate over blocks
     for block in blocks:
@@ -44,43 +59,57 @@ def get_basketball_odds(soup):
             # get odds content
             odds = row.findAll('button', {'data-ubt-page': 'liveSports'})
 
-            # get AH line
-            ah_line = odds[0].findAll('span', {'class': 'OddsButton__Parameter'})
-            if ah_line:
-                ah_line = ah_line[0].text
-                ah_home = odds[0].find('span', {'class': 'OddsButton__Odds'}).text
-                ah_away = odds[1].find('span', {'class': 'OddsButton__Odds'}).text
-            else:
-                ah_line, ah_home, ah_away = '', '', ''
+            if sport in ['Krepšinis']:
+                # get AH line and odds
+                ah_line = get_text(odds[0], 'span', {'class': 'OddsButton__Parameter'})
+                ah_home = get_text(odds[0], 'span', {'class': 'OddsButton__Odds'})
+                ah_away = get_text(odds[1], 'span', {'class': 'OddsButton__Odds'})
 
-            # get OU line and odds
-            ou_line = odds[2].findAll('span', {'class': 'OddsButton__Odds'})
-            if ou_line:
-                ou_over = ou_line[0].text
-                ou_under = odds[3].find('span', {'class': 'OddsButton__Odds'}).text
-                ou_line = ou_line[0].parent.parent.parent.find('span', {'class': 'OddsParameter'}).text
-            else:
-                ou_over, ou_under, ou_line = '', '', ''
+                # get OU odds
+                ou_over = get_text(odds[2], 'span', {'class': 'OddsButton__Odds'})
+                ou_under = get_text(odds[3], 'span', {'class': 'OddsButton__Odds'})
 
-            # get ML
-            ml = odds[4].findAll('span', {'class': 'OddsButton__Odds'})
-            if ml:
-                ml_home = ml[0].text
-                ml_away = odds[5].findAll('span', {'class': 'OddsButton__Odds'})
-                if ml_away:
-                    ml_away = ml_away[0].text
+                # get OU line
+                ou_line = odds[2].findAll('span', {'class': 'OddsButton__Odds'})
+                if ou_line:
+                    ou_line = ou_line[0].parent.parent.parent.find('span', {'class': 'OddsParameter'}).text
                 else:
-                    ml_away = ''
-            else:
-                ml_home = ''
-                ml_away = ''
+                    ou_line = ''
 
-            data.append([country_name, league_name,
-                         team_names[0].text, team_names[1].text,
-                         match_status,
-                         pts_home, pts_away,
-                         ml_home, ml_away,
-                         ah_line, ah_home, ah_away,
-                         ou_line, ou_over, ou_under])
+                # get ML
+                ml_home = get_text(odds[4], 'span', {'class': 'OddsButton__Odds'})
+                ml_away = get_text(odds[5], 'span', {'class': 'OddsButton__Odds'})
+
+                data.append([country_name, league_name,
+                             team_names[0].text, team_names[1].text,
+                             match_status,
+                             pts_home, pts_away,
+                             ml_home, ml_away,
+                             ah_line, ah_home, ah_away,
+                             ou_line, ou_over, ou_under])
+
+            else:
+                # get 1x2 odds
+                ml_home = get_text(odds[0], 'span', {'class': 'OddsButton__Odds'})
+                ml_draw = get_text(odds[1], 'span', {'class': 'OddsButton__Odds'})
+                ml_away = get_text(odds[2], 'span', {'class': 'OddsButton__Odds'})
+
+                # get OU line
+                ou_line = odds[3].findAll('span', {'class': 'OddsButton__Odds'})
+                if ou_line:
+                    ou_line = ou_line[0].parent.parent.parent.find('span', {'class': 'OddsParameter'}).text
+                else:
+                    ou_line = ''
+
+                # get OU odds
+                ou_over = get_text(odds[3], 'span', {'class': 'OddsButton__Odds'})
+                ou_under = get_text(odds[4], 'span', {'class': 'OddsButton__Odds'})
+
+                data.append([country_name, league_name,
+                             team_names[0].text, team_names[1].text,
+                             match_status,
+                             pts_home, pts_away,
+                             ml_home, ml_draw, ml_away,
+                             ou_line, ou_over, ou_under])
 
     return data

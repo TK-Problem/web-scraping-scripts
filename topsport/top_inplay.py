@@ -1,23 +1,19 @@
-from helper_functions import get_basketball_odds
+import time
+
+from helper_functions import get_odds
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 import datetime
 
 
-# class TopsportPage:
-#     def __init__(self, page):
-#         self.page = page
-#
-#     def navigate(self):
-#         self.page.goto("https://www.topsport.lt/lazybos-gyvai")
-#         # close popup
-#         self.page.click("button[class='Cookie__button']")
+SPORT_DICT = {'Krepšinis': 'b_', 'Futbolas': 'f_'}
 
 
-def monitor(sport='Krepšinis'):
+def monitor(sport='Krepšinis', time_count=30):
     """
     This function monitors topsport inplay odds for specific sport type.
     :param sport: str
+    :param time_count: int
     :return: None
     """
     with sync_playwright() as p:
@@ -46,23 +42,44 @@ def monitor(sport='Krepšinis'):
         # wait till matches are loaded
         page.frame(name="sportsFrame").wait_for_selector(f"div[class=MatchList__Header]")
 
-        # get page source and generate soup
-        page_source = page.frame(name="sportsFrame").content()
-        page.screenshot(path="example.png")
-        soup = BeautifulSoup(page_source, "lxml")
+        # iterate over time
+        for m in range(time_count):
 
-        # generate file name
-        record_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        file_name = record_time[:10].replace('-', '_') + '.csv'
+            # get page source and generate soup
+            page_source = page.frame(name="sportsFrame").content()
+            page.screenshot(path="example.png")
+            soup = BeautifulSoup(page_source, "lxml")
 
-        # get odds
-        data = get_basketball_odds(soup)
+            # generate file name
+            record_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            file_name = f'{SPORT_DICT.get(sport)}' + record_time[:10].replace('-', '_') + '.csv'
 
-        # write data to csv file
-        with open(file_name, 'a', encoding='utf-8') as fd:
-            for line in data:
-                line = record_time + ','+ ','.join(line) + '\n'
-                fd.write(line)
+            # get odds
+            data = get_odds(soup, sport=sport)
+
+            # write data to csv file
+            with open(file_name, 'a', encoding='utf-8') as fd:
+                for line in data:
+                    line = record_time + ',' + ','.join(line) + '\n'
+                    fd.write(line)
+
+            # reload page
+            page.reload()
+
+            # sleep
+            time.sleep(20)
+
+            # click sport menu item
+            if page.frame(name="sportsFrame").is_visible(f'text={sport}'):
+                page.frame(name="sportsFrame").click(f'text={sport}')
+            else:
+                print(f'{sport} is not available')
+
+            # take screenshot
+            page.screenshot(path="example.png")
+
+            # wait till matches are loaded
+            page.frame(name="sportsFrame").wait_for_selector(f"div[class=MatchList__Header]")
 
         # close browser
         browser.close()
@@ -70,4 +87,4 @@ def monitor(sport='Krepšinis'):
 
 # run app
 if __name__ == '__main__':
-    monitor()
+    monitor('Futbolas')
