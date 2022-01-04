@@ -47,7 +47,7 @@ def monitor(sport='Krepšinis', time_count=30):
 
             # get page source and generate soup
             page_source = page.frame(name="sportsFrame").content()
-            page.screenshot(path="example.png")
+
             soup = BeautifulSoup(page_source, "lxml")
 
             # generate file name
@@ -63,8 +63,9 @@ def monitor(sport='Krepšinis', time_count=30):
                     line = record_time + ',' + ','.join(line) + '\n'
                     fd.write(line)
 
-            # reload page
-            page.reload()
+            # reload page every 10th time
+            if (m+1) % 10 == 0:
+                page.reload()
 
             # sleep
             time.sleep(20)
@@ -76,7 +77,7 @@ def monitor(sport='Krepšinis', time_count=30):
                 print(f'{sport} is not available')
 
             # take screenshot
-            page.screenshot(path="example.png")
+            page.screenshot(path=f"{SPORT_DICT[sport]}status.png")
 
             # wait till matches are loaded
             page.frame(name="sportsFrame").wait_for_selector(f"div[class=MatchList__Header]")
@@ -87,4 +88,14 @@ def monitor(sport='Krepšinis', time_count=30):
 
 # run app
 if __name__ == '__main__':
-    monitor('Futbolas')
+    _sport = input('Įveskite sporto šaką: ')
+    while _sport not in SPORT_DICT:
+        _sport = input('Įveskite sporto šaką: ')
+
+    i = 1
+    start_time = time.time()
+    while i:
+        monitor(_sport)
+        duration = time.time() - start_time
+        print(i, f'recording {duration/60:.2f} minutes.')
+        i += 1
