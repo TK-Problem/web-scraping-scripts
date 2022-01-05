@@ -95,7 +95,12 @@ if __name__ == '__main__':
     i = 1
     start_time = time.time()
     while i:
-        monitor(_sport)
+        try:
+            monitor(_sport)
+        except Exception as e:
+            print(f'Error {e}')
+            print("Interupted")
+
         duration = time.time() - start_time
         print(i, f'recording {duration/60:.2f} minutes.')
         i += 1
