@@ -55,13 +55,17 @@ def monitor(sport='Krepšinis', time_count=30):
             file_name = f'{SPORT_DICT.get(sport)}' + record_time[:10].replace('-', '_') + '.csv'
 
             # get odds
-            data = get_odds(soup, sport=sport)
-
-            # write data to csv file
-            with open(file_name, 'a', encoding='utf-8') as fd:
-                for line in data:
-                    line = record_time + ',' + ','.join(line) + '\n'
-                    fd.write(line)
+            try:
+                data = get_odds(soup, sport=sport)
+            except Exception as error_name:
+                print(f'{error_name}')
+                print('Odds were not read.')
+            else:
+                # write data to csv file
+                with open(file_name, 'a', encoding='utf-8') as fd:
+                    for line in data:
+                        line = record_time + ',' + ','.join(line) + '\n'
+                        fd.write(line)
 
             # reload page every 10th time
             if (m+1) % 10 == 0:

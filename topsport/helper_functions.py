@@ -59,6 +59,13 @@ def get_odds(soup, sport='Krepšinis'):
             # get odds content
             odds = row.findAll('button', {'data-ubt-page': 'liveSports'})
 
+            # get game ID
+            game_id = row.findAll('a', {'class': 'Anchor Details'})
+            if game_id:
+                game_id = "/".join(game_id[0]['href'].split('/')[-2:])
+            else:
+                game_id = ''
+
             if sport in ['Krepšinis']:
                 # get AH line and odds
                 ah_line = get_text(odds[0], 'span', {'class': 'OddsButton__Parameter'})
@@ -80,7 +87,7 @@ def get_odds(soup, sport='Krepšinis'):
                 ml_home = get_text(odds[4], 'span', {'class': 'OddsButton__Odds'})
                 ml_away = get_text(odds[5], 'span', {'class': 'OddsButton__Odds'})
 
-                data.append([country_name, league_name,
+                data.append([game_id, country_name, league_name,
                              team_names[0].text, team_names[1].text,
                              match_status,
                              pts_home, pts_away,
@@ -105,7 +112,7 @@ def get_odds(soup, sport='Krepšinis'):
                 ou_over = get_text(odds[3], 'span', {'class': 'OddsButton__Odds'})
                 ou_under = get_text(odds[4], 'span', {'class': 'OddsButton__Odds'})
 
-                data.append([country_name, league_name,
+                data.append([game_id, country_name, league_name,
                              team_names[0].text, team_names[1].text,
                              match_status,
                              pts_home, pts_away,
