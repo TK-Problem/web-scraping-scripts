@@ -66,7 +66,7 @@ def get_odds(soup, sport='Krepšinis'):
             else:
                 game_id = ''
 
-            if sport in ['Krepšinis']:
+            if sport == 'Krepšinis':
                 # get AH line and odds
                 ah_line = get_text(odds[0], 'span', {'class': 'OddsButton__Parameter'})
                 ah_home = get_text(odds[0], 'span', {'class': 'OddsButton__Odds'})
@@ -87,6 +87,7 @@ def get_odds(soup, sport='Krepšinis'):
                 ml_home = get_text(odds[4], 'span', {'class': 'OddsButton__Odds'})
                 ml_away = get_text(odds[5], 'span', {'class': 'OddsButton__Odds'})
 
+                # record data
                 data.append([game_id, country_name, league_name,
                              team_names[0].text, team_names[1].text,
                              match_status,
@@ -95,7 +96,8 @@ def get_odds(soup, sport='Krepšinis'):
                              ah_line, ah_home, ah_away,
                              ou_line, ou_over, ou_under])
 
-            else:
+            elif sport == 'Futobolas':
+
                 # get 1x2 odds
                 ml_home = get_text(odds[0], 'span', {'class': 'OddsButton__Odds'})
                 ml_draw = get_text(odds[1], 'span', {'class': 'OddsButton__Odds'})
@@ -112,11 +114,43 @@ def get_odds(soup, sport='Krepšinis'):
                 ou_over = get_text(odds[3], 'span', {'class': 'OddsButton__Odds'})
                 ou_under = get_text(odds[4], 'span', {'class': 'OddsButton__Odds'})
 
+                # record data
                 data.append([game_id, country_name, league_name,
                              team_names[0].text, team_names[1].text,
                              match_status,
                              pts_home, pts_away,
                              ml_home, ml_draw, ml_away,
+                             ou_line, ou_over, ou_under])
+
+            elif sport == 'Ledo ritulys':
+
+                # get 1x2 odds
+                ml_home = get_text(odds[0], 'span', {'class': 'OddsButton__Odds'})
+                ml_draw = get_text(odds[1], 'span', {'class': 'OddsButton__Odds'})
+                ml_away = get_text(odds[2], 'span', {'class': 'OddsButton__Odds'})
+
+                # get AH line
+                ah_line = get_text(odds[3], 'span', {'class': 'OddsButton__Parameter'})
+                ah_home = get_text(odds[3], 'span', {'class': 'OddsButton__Odds'})
+                ah_away = get_text(odds[4], 'span', {'class': 'OddsButton__Odds'})
+
+                # get OU odds
+                ou_over = get_text(odds[2], 'span', {'class': 'OddsButton__Odds'})
+                ou_under = get_text(odds[3], 'span', {'class': 'OddsButton__Odds'})
+
+                # get OU line
+                ou_line = odds[2].findAll('span', {'class': 'OddsButton__Odds'})
+                if ou_line:
+                    ou_line = ou_line[0].parent.parent.parent.find('span', {'class': 'OddsParameter'}).text
+                else:
+                    ou_line = ''
+
+                data.append([game_id, country_name, league_name,
+                             team_names[0].text, team_names[1].text,
+                             match_status,
+                             pts_home, pts_away,
+                             ml_home, ml_draw, ml_away,
+                             ah_line, ah_home, ah_away,
                              ou_line, ou_over, ou_under])
 
     return data

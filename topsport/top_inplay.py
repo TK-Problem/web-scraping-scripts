@@ -6,19 +6,23 @@ from playwright.sync_api import sync_playwright
 import datetime
 
 
-SPORT_DICT = {'Krepšinis': 'b_', 'Futbolas': 'f_'}
+SPORT_DICT = {'Krepšinis': 'b_', 'Futbolas': 'f_', 'Ledo ritulys': 'h_'}
 
 
-def monitor(sport='Krepšinis', time_count=30):
+class OddsportalPage:
+    def __init__(self, page):
+        self.page = page
+
+
+def monitor(sport='Krepšinis'):
     """
     This function monitors topsport inplay odds for specific sport type.
     :param sport: str
-    :param time_count: int
     :return: None
     """
     with sync_playwright() as p:
         # launch webdriver browser in headless mode
-        browser = p.chromium.launch(headless=True, slow_mo=50)
+        browser = p.chromium.launch(headless=False, slow_mo=50)
 
         # create new page
         user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0'
@@ -34,20 +38,32 @@ def monitor(sport='Krepšinis', time_count=30):
         page.frame(name="sportsFrame").wait_for_selector("div[class='rc-tabs-nav rc-tabs-nav-animated']")
 
         # click sport menu item
-        if page.frame(name="sportsFrame").is_visible(f'text={sport}'):
-            page.frame(name="sportsFrame").click(f'text={sport}')
+        if page.frame(name="sportsFrame").is_visible(f"text='{sport}'"):
+            page.frame(name="sportsFrame").click(f"text='{sport}'")
         else:
-            print(f'{sport} is not available')
+            # click next button if sport not found
+            page.frame(name="sportsFrame").click(".rc-tabs-tab-next")
+            # click sport menu item
+            if page.frame(name="sportsFrame").is_visible(f"text='{sport}'"):
+                page.frame(name="sportsFrame").click(f"text='{sport}'")
+            else:
+                print(f'{sport} is not available')
 
         # wait till matches are loaded
         page.frame(name="sportsFrame").wait_for_selector(f"div[class=MatchList__Header]")
 
+        # click understand rules button
+        page.click("text='Supratau, neberodyti daugiau.'")
+
         # iterate over time
-        for m in range(time_count):
+        for m in range(2):
+
+            # check if more matches are available
+            while page.frame(name="sportsFrame").is_visible("text=Rodyti daugiau"):
+                page.frame(name="sportsFrame").click("text=Rodyti daugiau")
 
             # get page source and generate soup
             page_source = page.frame(name="sportsFrame").content()
-
             soup = BeautifulSoup(page_source, "lxml")
 
             # generate file name
@@ -71,17 +87,23 @@ def monitor(sport='Krepšinis', time_count=30):
             if (m+1) % 10 == 0:
                 page.reload()
 
+            # take screenshot
+            page.screenshot(path=f"{SPORT_DICT[sport]}status.png")
+
             # sleep
             time.sleep(20)
 
             # click sport menu item
-            if page.frame(name="sportsFrame").is_visible(f'text={sport}'):
-                page.frame(name="sportsFrame").click(f'text={sport}')
+            if page.frame(name="sportsFrame").is_visible(f"text='{sport}'"):
+                page.frame(name="sportsFrame").click(f"text='{sport}'")
             else:
-                print(f'{sport} is not available')
-
-            # take screenshot
-            page.screenshot(path=f"{SPORT_DICT[sport]}status.png")
+                # click next button if sport not found
+                page.frame(name="sportsFrame").click(".rc-tabs-tab-next")
+                # click sport menu item
+                if page.frame(name="sportsFrame").is_visible(f"text='{sport}'"):
+                    page.frame(name="sportsFrame").click(f"text='{sport}'")
+                else:
+                    print(f'{sport} is not available')
 
             # wait till matches are loaded
             page.frame(name="sportsFrame").wait_for_selector(f"div[class=MatchList__Header]")
@@ -92,9 +114,14 @@ def monitor(sport='Krepšinis', time_count=30):
 
 # run app
 if __name__ == '__main__':
-    _sport = input('Įveskite sporto šaką: ')
-    while _sport not in SPORT_DICT:
-        _sport = input('Įveskite sporto šaką: ')
+    # _sport = input('Įveskite sporto šaką: ')
+    # while _sport not in SPORT_DICT:
+    #     _sport = input('Įveskite sporto šaką: ')
+
+    # Click .rc-tabs-tab-next
+    # page.frame(name="sportsFrame").click(".rc-tabs-tab-next")
+
+    _sport = 'Ledo ritulys'
 
     i = 1
     start_time = time.time()
