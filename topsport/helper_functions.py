@@ -34,7 +34,8 @@ def get_odds(soup, sport='Krepšinis'):
 
         # get league name
         block_title = block.find('span', {'class': 'MatchListGroup__Title'})
-        league_name = block_title.text
+        # replace commas with spaces
+        league_name = block_title.text.replace(',', '')
 
         # get country flag code
         country_name = block_title.parent.span.span['style'].split('/')[-1][:-7]

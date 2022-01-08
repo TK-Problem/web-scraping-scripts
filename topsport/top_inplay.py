@@ -94,7 +94,7 @@ def monitor():
     with sync_playwright() as p:
 
         # launch webdriver browser in headless mode
-        browser = p.chromium.launch(headless=False, slow_mo=50)
+        browser = p.chromium.launch(headless=True, slow_mo=50)
 
         # create new pages
         user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0'
