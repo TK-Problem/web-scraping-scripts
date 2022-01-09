@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import datetime
 import requests
 
 
@@ -46,6 +47,9 @@ def top_market_data(soup, sport):
     # temp.list to save records
     tmp = list()
 
+    # generate timestamp data was collected
+    record_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     # iterate over blocks
     for block in blocks:
 
@@ -75,6 +79,101 @@ def top_market_data(soup, sport):
             if href:
                 href = href['content']
 
-            tmp.append([sport, league_name, event_date, home_name, away_name, href])
+            tmp.append([record_time, sport, league_name, event_date, home_name, away_name, href])
 
     return tmp
+
+
+MARKET_DICT = {'Kas laimės (1x2)': '1x2',
+               'Rungtynių nugalėtojas (įskaitant pratęsimą)': 'ML',
+               'Kas laimės': 'ML',
+               'Įvarčių kiekis per rungtynes': 'OU',
+               'Abiejų komandų pelnyti taškai (įskaitant pratęsimą)': 'OU',
+               'Sužaistų geimų kiekis mače': 'OU',
+               'Pranašumas 2': 'AH',
+               'Pranašumas (įskaitant pratęsimą)': 'AH'}
+
+
+def top_event_odds(url):
+    """
+    This function returns available odds.
+    :param url: str
+    :return: list
+    """
+    # load HTML dom and convert to bs4 element
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content, 'lxml')
+
+    # generate timestamp data was collected
+    record_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # long class names
+    _class_name_1 = 'd-flex align-items-center justify-content-between pl-2 pl-md-0 h-fs15 h-lh1_2'
+    _class_name_2 = 'prelive-list-league-rate ml-1 h-font-secondary h-fs17 h-fw500'
+
+    # create temp. list to store data
+    tmp_list = list()
+
+    # get all markets
+    markets = soup.findAll('div', {'class': 'prelive-list-game-item js-prelive-event-row mb-4 h-rel'})
+    for market in markets:
+        # identify market type
+        bet_type = market.find('div', {'class': _class_name_1}).text.strip()
+
+        # check if market is known
+        if bet_type in MARKET_DICT.keys():
+
+            # convert bet_type
+            bet_type = MARKET_DICT[bet_type]
+
+            # find all odds
+            odds = market.findAll('span', {'class': _class_name_2})
+
+            # get 1x2 prices
+            if bet_type == '1x2':
+                # record data
+                tmp_list.append([record_time, url, bet_type, 'Home', odds[0].text.replace(',', '.')])
+                tmp_list.append([record_time, url, bet_type, 'Draw', odds[1].text.replace(',', '.')])
+                tmp_list.append([record_time, url, bet_type, 'Away', odds[-1].text.replace(',', '.')])
+
+            # get ML prices
+            if bet_type == 'ML':
+                # record data
+                tmp_list.append([record_time, url, bet_type, 'Home', odds[0].text.replace(',', '.')])
+                tmp_list.append([record_time, url, bet_type, 'Draw', odds[-1].text.replace(',', '.')])
+
+            # get OU prices
+            elif bet_type == 'OU':
+                for i in range(len(odds)//2):
+                    # get odds
+                    under_odds = odds[i*2].text.replace(',', '.')
+                    over_odds = odds[i*2 + 1].text.replace(',', '.')
+                    # get OU line
+                    ou_line = float(odds[i*2].parent.parent.strong.text.replace(',', '.'))
+                    # record data
+                    tmp_list.append([record_time, url, f"OU{ou_line:.1f}", 'Over', over_odds])
+                    tmp_list.append([record_time, url, f"OU{ou_line:.1f}", 'Under', under_odds])
+
+            # get AH prices
+            elif bet_type == 'AH':
+                for i in range(len(odds) // 2):
+                    # get odds
+                    home_odds = odds[i * 2].text.replace(',', '.')
+                    away_odds = odds[i * 2 + 1].text.replace(',', '.')
+                    # get AH lines
+                    ah_home = float(odds[i * 2].parent.parent.strong.text.replace(',', '.'))
+                    ah_away = float(odds[i * 2 + 1].parent.parent.strong.text.replace(',', '.'))
+
+                    # define line
+                    if ah_away > 0:
+                        ah_line = -1 * ah_away
+                    else:
+                        ah_line = ah_home
+
+                    # record data
+                    tmp_list.append([record_time, url, f"AH{ah_line:.1f}", 'Home', home_odds])
+                    tmp_list.append([record_time, url, f"AH{ah_line:.1f}", 'Away', away_odds])
+
+    return tmp_list
+
+
