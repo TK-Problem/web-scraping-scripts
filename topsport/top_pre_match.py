@@ -165,7 +165,7 @@ def top_event_odds(url):
                     ah_away = float(odds[i * 2 + 1].parent.parent.strong.text.replace(',', '.'))
 
                     # define line
-                    if ah_away > 0:
+                    if ah_away != 0:
                         ah_line = -1 * ah_away
                     else:
                         ah_line = ah_home
