@@ -11,10 +11,8 @@ def get_today_events():
     # load available pages
     urls = ['https://www.topsport.lt/lazybos-siandien/futbolas',
             'https://www.topsport.lt/lazybos-siandien/krepsinis',
-            'https://www.topsport.lt/lazybos-siandien/tenisas']
-
-    # for testing
-    # urls = ['https://www.topsport.lt/lazybos-siandien/tenisas']
+            'https://www.topsport.lt/lazybos-siandien/tenisas',
+            'https://www.topsport.lt/lazybos-siandien/ledo-ritulys']
 
     # tmp.list to store data
     tmp_data = list()
@@ -84,20 +82,22 @@ def top_market_data(soup, sport):
     return tmp
 
 
-MARKET_DICT = {'Kas laimės (1x2)': '1x2',
-               'Rungtynių nugalėtojas (įskaitant pratęsimą)': 'ML',
-               'Kas laimės': 'ML',
-               'Įvarčių kiekis per rungtynes': 'OU',
-               'Abiejų komandų pelnyti taškai (įskaitant pratęsimą)': 'OU',
-               'Sužaistų geimų kiekis mače': 'OU',
-               'Pranašumas 2': 'AH',
-               'Pranašumas (įskaitant pratęsimą)': 'AH'}
+MARKET_DICT = {'Basketball': {'Rungtynių nugalėtojas (įskaitant pratęsimą)': ['FT', 'ML'],
+                              'Pirma rungtynių pusė - Laimės be lygiųjų (Draw no bet)': ['P1', 'ML'],
+                              'Kas laimės pirmą kėlinuką - Draw no bet': ['Q1', 'ML'],
+                              'Abiejų komandų pelnyti taškai (įskaitant pratęsimą)': ['FT', 'OU'],
+                              'Pirma rungtynių pusė - Abi komandos pelnys taškų': ['P1', 'OU'],
+                              '1 kėlinukas - Abi komandos pelnys taškų': ['Q1', 'OU'],
+                              'Pranašumas (įskaitant pratęsimą)': ['FT', 'AH'],
+                              'Pirma rungtynių pusė - Pranašumas': ['P1', 'AH'],
+                              '1 kėlinukas - Pranašumas': ['Q1', 'AH']}}
 
 
-def top_event_odds(url):
+def top_event_odds(url, sport):
     """
     This function returns available odds.
     :param url: str
+    :param sport: str
     :return: list
     """
     # load HTML dom and convert to bs4 element
@@ -114,17 +114,27 @@ def top_event_odds(url):
     # create temp. list to store data
     tmp_list = list()
 
+    # get market keys
+    sport_dict = MARKET_DICT[sport]
+
     # get all markets
     markets = soup.findAll('div', {'class': 'prelive-list-game-item js-prelive-event-row mb-4 h-rel'})
+
     for market in markets:
         # identify market type
         bet_type = market.find('div', {'class': _class_name_1}).text.strip()
 
+        # get bet type
+        bet_type = sport_dict.get(bet_type)
+
         # check if market is known
-        if bet_type in MARKET_DICT.keys():
+        if bet_type:
+
+            # get bet period
+            bet_period = bet_type[0]
 
             # convert bet_type
-            bet_type = MARKET_DICT[bet_type]
+            bet_type = bet_type[1]
 
             # find all odds
             odds = market.findAll('span', {'class': _class_name_2})
@@ -132,15 +142,15 @@ def top_event_odds(url):
             # get 1x2 prices
             if bet_type == '1x2':
                 # record data
-                tmp_list.append([record_time, url, bet_type, 'Home', odds[0].text.replace(',', '.')])
-                tmp_list.append([record_time, url, bet_type, 'Draw', odds[1].text.replace(',', '.')])
-                tmp_list.append([record_time, url, bet_type, 'Away', odds[-1].text.replace(',', '.')])
+                tmp_list.append([record_time, url, bet_period, bet_type, 'Home', odds[0].text.replace(',', '.')])
+                tmp_list.append([record_time, url, bet_period, bet_type, 'Draw', odds[1].text.replace(',', '.')])
+                tmp_list.append([record_time, url, bet_period, bet_type, 'Away', odds[-1].text.replace(',', '.')])
 
             # get ML prices
             if bet_type == 'ML':
                 # record data
-                tmp_list.append([record_time, url, bet_type, 'Home', odds[0].text.replace(',', '.')])
-                tmp_list.append([record_time, url, bet_type, 'Draw', odds[-1].text.replace(',', '.')])
+                tmp_list.append([record_time, url, bet_period, bet_type, 'Home', odds[0].text.replace(',', '.')])
+                tmp_list.append([record_time, url, bet_period, bet_type, 'Away', odds[-1].text.replace(',', '.')])
 
             # get OU prices
             elif bet_type == 'OU':
@@ -151,8 +161,8 @@ def top_event_odds(url):
                     # get OU line
                     ou_line = float(odds[i*2].parent.parent.strong.text.replace(',', '.'))
                     # record data
-                    tmp_list.append([record_time, url, f"OU{ou_line:.1f}", 'Over', over_odds])
-                    tmp_list.append([record_time, url, f"OU{ou_line:.1f}", 'Under', under_odds])
+                    tmp_list.append([record_time, url, bet_period, f"OU{ou_line:.1f}", 'Over', over_odds])
+                    tmp_list.append([record_time, url, bet_period, f"OU{ou_line:.1f}", 'Under', under_odds])
 
             # get AH prices
             elif bet_type == 'AH':
@@ -171,8 +181,8 @@ def top_event_odds(url):
                         ah_line = ah_home
 
                     # record data
-                    tmp_list.append([record_time, url, f"AH{ah_line:.1f}", 'Home', home_odds])
-                    tmp_list.append([record_time, url, f"AH{ah_line:.1f}", 'Away', away_odds])
+                    tmp_list.append([record_time, url, bet_period, f"AH{ah_line:.1f}", 'Home', home_odds])
+                    tmp_list.append([record_time, url, bet_period, f"AH{ah_line:.1f}", 'Away', away_odds])
 
     return tmp_list
 
