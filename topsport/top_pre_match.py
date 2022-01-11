@@ -90,7 +90,26 @@ MARKET_DICT = {'Basketball': {'Rungtynių nugalėtojas (įskaitant pratęsimą)'
                               '1 kėlinukas - Abi komandos pelnys taškų': ['Q1', 'OU'],
                               'Pranašumas (įskaitant pratęsimą)': ['FT', 'AH'],
                               'Pirma rungtynių pusė - Pranašumas': ['P1', 'AH'],
-                              '1 kėlinukas - Pranašumas': ['Q1', 'AH']}}
+                              '1 kėlinukas - Pranašumas': ['Q1', 'AH']},
+
+               'Soccer': {'Kas laimės (1x2)': ['FT', '1x2'],
+                          'Pirmas kėlinys (1x2)': ['P1', '1x2'],
+                          'Pranašumas 2': ['FT', 'AH'],
+                          'Pirmas kėlinys - Pranašumas 2': ['P1', 'AH'],
+                          'Įvarčių kiekis per rungtynes': ['FT', 'OU'],
+                          'Kiek įvarčių bus per pirmą kėlinį': ['P1', 'OU']},
+
+               'Tennis': {'Kas laimės': ['FT', 'ML'],
+                          'Pranašumas - Geimai visame mače': ['G', 'AH'],
+                          'Pranašumas - Setai': ['S', 'AH'],
+                          'Sužaistų geimų kiekis mače': ['G', 'OU']},
+
+               'Hockey': {"Kas laimės (1x2)": ['RT', '1x2'],
+                          'Pirmas kėlinys (1x2)': ['Q1', '1x2'],
+                          'Rungtynių nugalėtojas': ['RT', 'ML'],
+                          'Įvarčių kiekis per rungtynes': ['RT', 'OU'],
+                          'Įvarčių kiekis per pirmą kėlinį': ['Q1', 'OU'],
+                          'Pranašumas 2': ['RT', 'AH']}}
 
 
 def top_event_odds(url, sport):
