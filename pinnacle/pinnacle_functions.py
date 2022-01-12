@@ -33,7 +33,7 @@ def get_pinna_matches(x_api_key, x_device_uuid):
     tmp_lst = list()
 
     # iterate over sport types
-    for sport_id in [4, 29, 19, 33]:
+    for sport_id in [4, 29, 19]:
         url = f"https://guest.api.arcadia.pinnacle.com/0.1/sports/{sport_id}/matchups"
         # request for json file
         r = requests.get(url, timeout=15, headers={"X-API-Key": x_api_key,
@@ -86,7 +86,7 @@ def get_pinna_odds(x_api_key, x_device_uuid):
     odds_3 = list()
 
     # iterate over sports
-    for sport_id in [4, 29, 19, 33]:
+    for sport_id in [4, 29, 19]:
         # generate url
         url = f"https://guest.api.arcadia.pinnacle.com/0.1/sports/{sport_id}/markets/straight?primaryOnly=false"
 

@@ -94,18 +94,14 @@ MARKET_DICT = {'Basketball': {'Rungtynių nugalėtojas (įskaitant pratęsimą)'
 
                'Soccer': {'Kas laimės (1x2)': ['FT', '1x2'],
                           'Pirmas kėlinys (1x2)': ['P1', '1x2'],
+                          'Laimės be lygiųjų (Draw no bet)': ['FT', 'ML'],
+                          '1 kėlinys - Laimės be lygiųjų (Draw no bet)': ['P1', 'ML'],
                           'Pranašumas 2': ['FT', 'AH'],
                           'Pirmas kėlinys - Pranašumas 2': ['P1', 'AH'],
                           'Įvarčių kiekis per rungtynes': ['FT', 'OU'],
                           'Kiek įvarčių bus per pirmą kėlinį': ['P1', 'OU']},
 
-               'Tennis': {'Kas laimės': ['FT', 'ML'],
-                          'Pranašumas - Geimai visame mače': ['G', 'AH'],
-                          'Pranašumas - Setai': ['S', 'AH'],
-                          'Sužaistų geimų kiekis mače': ['G', 'OU']},
-
                'Hockey': {"Kas laimės (1x2)": ['RT', '1x2'],
-                          'Pirmas kėlinys (1x2)': ['Q1', '1x2'],
                           'Rungtynių nugalėtojas': ['RT', 'ML'],
                           'Įvarčių kiekis per rungtynes': ['RT', 'OU'],
                           'Įvarčių kiekis per pirmą kėlinį': ['Q1', 'OU'],
