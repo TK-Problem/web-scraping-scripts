@@ -126,8 +126,9 @@ def top_event_odds(url, sport):
     _class_name_1 = 'd-flex align-items-center justify-content-between pl-2 pl-md-0 h-fs15 h-lh1_2'
     _class_name_2 = 'prelive-list-league-rate ml-1 h-font-secondary h-fs17 h-fw500'
 
-    # create temp. list to store data
-    tmp_list = list()
+    # create temp. list to store data for 2 and 3- outcome bets
+    odds_2 = list()
+    odds_3 = list()
 
     # get market keys
     sport_dict = MARKET_DICT[sport]
@@ -157,15 +158,14 @@ def top_event_odds(url, sport):
             # get 1x2 prices
             if bet_type == '1x2':
                 # record data
-                tmp_list.append([record_time, url, bet_period, bet_type, 'Home', odds[0].text.replace(',', '.')])
-                tmp_list.append([record_time, url, bet_period, bet_type, 'Draw', odds[1].text.replace(',', '.')])
-                tmp_list.append([record_time, url, bet_period, bet_type, 'Away', odds[-1].text.replace(',', '.')])
+                odds_3.append([record_time, url, bet_period, bet_type,
+                               odds[0].text.replace(',', '.'), odds[1].text.replace(',', '.'), odds[-1].text.replace(',', '.')])
 
             # get ML prices
             if bet_type == 'ML':
                 # record data
-                tmp_list.append([record_time, url, bet_period, bet_type, 'Home', odds[0].text.replace(',', '.')])
-                tmp_list.append([record_time, url, bet_period, bet_type, 'Away', odds[-1].text.replace(',', '.')])
+                odds_2.append([record_time, url, bet_period, bet_type,
+                               odds[0].text.replace(',', '.'), odds[-1].text.replace(',', '.')])
 
             # get OU prices
             elif bet_type == 'OU':
@@ -176,8 +176,8 @@ def top_event_odds(url, sport):
                     # get OU line
                     ou_line = float(odds[i*2].parent.parent.strong.text.replace(',', '.'))
                     # record data
-                    tmp_list.append([record_time, url, bet_period, f"OU{ou_line:.1f}", 'Over', over_odds])
-                    tmp_list.append([record_time, url, bet_period, f"OU{ou_line:.1f}", 'Under', under_odds])
+                    odds_2.append([record_time, url, bet_period, f"OU{ou_line:.1f}",
+                                   over_odds, under_odds])
 
             # get AH prices
             elif bet_type == 'AH':
@@ -196,9 +196,8 @@ def top_event_odds(url, sport):
                         ah_line = ah_home
 
                     # record data
-                    tmp_list.append([record_time, url, bet_period, f"AH{ah_line:.1f}", 'Home', home_odds])
-                    tmp_list.append([record_time, url, bet_period, f"AH{ah_line:.1f}", 'Away', away_odds])
+                    odds_2.append([record_time, url, bet_period, f"AH{ah_line:.1f}", home_odds, away_odds])
 
-    return tmp_list
+    return odds_2, odds_3
 
 
