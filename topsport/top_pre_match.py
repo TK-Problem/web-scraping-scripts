@@ -11,7 +11,6 @@ def get_today_events():
     # load available pages
     urls = ['https://www.topsport.lt/lazybos-siandien/futbolas',
             'https://www.topsport.lt/lazybos-siandien/krepsinis',
-            'https://www.topsport.lt/lazybos-siandien/tenisas',
             'https://www.topsport.lt/lazybos-siandien/ledo-ritulys']
 
     # tmp.list to store data
@@ -28,6 +27,18 @@ def get_today_events():
 
         # process data
         tmp_data += top_market_data(soup, sport)
+
+        # count pages if avaialbe
+        no_pages = soup.findAll('ul', {'class': 'pagination'})
+        if no_pages:
+            # quickly load 3 pages
+            for page in range(2, 5):
+                # load HTML dom and convert to bs4 element
+                r = requests.get(url + f"?page={page}")
+
+                soup = BeautifulSoup(r.content, 'lxml')
+                # process data
+                tmp_data += top_market_data(soup, sport)
 
     return tmp_data
 

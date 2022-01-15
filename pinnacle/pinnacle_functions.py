@@ -1,7 +1,7 @@
 import requests
 
 
-# sport dictonary
+# sport dictionary
 SPORT_DICT = {4: 'Basketball', 29: 'Soccer', 19: 'Hockey', 33: 'Tennis'}
 
 # create user agent
